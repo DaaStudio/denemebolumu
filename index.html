@@ -2778,7 +2778,10 @@
                     : translateProductTitle(product.originalTitle || product.title, currentLanguage);
                 
                 // Use product image or placeholder
-                const productImage = product.image || `https://via.placeholder.com/300x200/333/FFFFFF?text=No+Image`;
+                const PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23333333'/%3E%3Ctext x='50%25' y='50%25' font-size='18' fill='%23ffffff' font-family='Arial, sans-serif' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";                
+               
+                // Ürün resmi varsa onu, yoksa yeni placeholder'ı kullan.
+                const productImage = product.image || PLACEHOLDER_IMAGE;
                 
                 const productCard = document.createElement('div');
                 productCard.className = 'product-card';
@@ -2791,7 +2794,7 @@
                             <i class="fas fa-times"></i>
                         </button>
                         ` : ''}
-                        <img src="${productImage}" alt="${displayTitle}" class="product-image" onerror="this.src='https://via.placeholder.com/300x200/333/FFFFFF?text=No+Image'">
+                        <img src="${productImage}" alt="${displayTitle}" class="product-image" onerror="this.src='${PLACEHOLDER_IMAGE}'; console.log('Image load failed, using static placeholder for:', '${product.id}');">
                     </div>
                     <div class="product-info">
                         <h3 class="product-title" onclick="toggleTitle(this)">${displayTitle}</h3>
