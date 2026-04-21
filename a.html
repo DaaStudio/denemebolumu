@@ -1,0 +1,3023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Buddy Products</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style> 
+        :root {
+            --primary: #ff3366;
+            --primary-dark: #e62e5e;
+            --secondary: #7c5cff;
+            /* AYDINLIK MOD RENKLERİ */
+            --dark: #f8f9fa;          /* Header arka plan rengi */
+            --darker: #ffffff;         /* Body arka plan rengi */
+            --light: #ffffff;          /* Kart arka plan rengi */
+            --gray: #6c757d;           /* İkincil metin rengi */
+            --dark-gray: #dee2e6;      /* Kenarlık rengi */
+            --success: #28a745;
+            --warning: #ffc107;
+            --border-radius: 12px;
+            --shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Daha hafif gölge */
+            --transition: all 0.3s ease;
+            
+            --bg-color: #ffffff;        /* Genel arka plan beyaz */
+            --text-color: #212529;      /* Genel metin rengi koyu gri/siyah */
+            --card-bg: #ffffff;         /* Kart arka planı beyaz */
+            --header-bg: linear-gradient(135deg, var(--primary), var(--secondary)); /* Header aynı kalabilir */
+            --footer-bg: #f8f9fa;       /* Footer arka planı */
+            --image-border: #dee2e6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            transition: var(--transition);
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+
+        /* Header */
+        header {
+            background: var(--header-bg);
+            color: white;
+            padding: 8px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            margin-right: 8px;
+        }
+
+        .logo {
+            height: 30px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: nowrap;
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        .language-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 0.65rem;
+            transition: var(--transition);
+            white-space: nowrap;
+            min-height: 28px;
+            flex-shrink: 0;
+        }
+
+        .language-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .search-bar {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            overflow: hidden;
+            flex: 1;
+            min-width: 100px;
+            max-width: none;
+            width: 100%;
+            margin-right: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .search-bar input {
+            flex: 1;
+            border: none;
+            padding: 4px 12px;
+            outline: none;
+            font-size: 0.7rem;
+            color: white;
+            background: transparent;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .search-bar button {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 36px;
+            flex-shrink: 0;
+        }
+
+        .search-bar button:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Language Dropdown */
+        .language-selector {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .language-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-width: 120px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1001;
+            margin-top: 4px;
+            border: 1px solid var(--dark-gray);
+        }
+
+        .language-dropdown.show {
+            display: block;
+        }
+
+        .language-option {
+            padding: 6px 10px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
+            font-size: 0.7rem;
+        }
+
+        .language-option:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Home Page Button */
+        .home-page-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+            margin: 20px auto;
+        }
+
+        .home-page-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,0.15);
+        }
+
+        .home-page-btn-container {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--success);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            z-index: 1002;
+            opacity: 0;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            max-width: 90%;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), 
+                        url('https://images.unsplash.com/photo-1607082350899-7e105aa886ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-align: center;
+            padding: 25px 12px;
+            margin-bottom: 12px;
+        }
+
+        .hero h1 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .hero p {
+            font-size: 0.75rem;
+            max-width: 100%;
+            margin: 0 auto;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* Status */
+        .status-info {
+            background: var(--card-bg);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 0.75rem;
+            border: 1px solid var(--dark-gray);
+        }
+
+        /* Categories */
+        .categories {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch;
+            max-width: 100%;
+        }
+
+        .categories::-webkit-scrollbar {
+            height: 2px;
+        }
+
+        .categories::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .categories::-webkit-scrollbar-thumb {
+            background: var(--gray);
+            border-radius: 2px;
+        }
+
+        .category-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--dark-gray);
+            padding: 4px 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            transition: var(--transition);
+            color: var(--text-color);
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-height: 28px;
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Sort Button */
+        .sort-select {
+            padding: 4px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--dark-gray);
+            background: var(--card-bg);
+            color: var(--text-color);
+            font-size: 0.65rem;
+            min-width: 100px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+            min-height: 28px;
+        }
+
+        .sort-select:hover {
+            border-color: var(--secondary);
+        }
+
+        .sort-select option {
+            background: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        /* Favorites Management */
+        .favorites-management {
+            background: var(--card-bg);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 10px;
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            border: 1px solid var(--dark-gray);
+        }
+
+        .favorites-management.show {
+            display: flex;
+        }
+
+        .clear-favorites-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.7rem;
+            width: 100%;
+            min-height: 32px;
+        }
+
+        .clear-favorites-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        #favorites-count {
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        /* Confirmation Modal */
+        .confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .confirmation-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .confirmation-content {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 320px;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--dark-gray);
+        }
+
+        .confirmation-modal.show .confirmation-content {
+            transform: translateY(0);
+        }
+
+        .confirmation-header {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--dark-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--header-bg);
+            color: white;
+        }
+
+        .confirmation-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .confirmation-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .confirmation-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .confirmation-body {
+            padding: 12px;
+            text-align: center;
+        }
+
+        .confirmation-message {
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            line-height: 1.4;
+            color: var(--text-color);
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .confirm-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.75rem;
+            flex: 1;
+            min-height: 32px;
+        }
+
+        .confirm-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .cancel-btn {
+            background: var(--dark-gray);
+            color: var(--text-color);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.75rem;
+            flex: 1;
+            min-height: 32px;
+        }
+
+        .cancel-btn:hover {
+            background: #ced4da;
+        }
+
+        /* Products Grid - MOBİL İÇİN 2 KOLON */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            padding: 0;
+            max-width: 100%;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 6px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            transition: transform .2s;
+            width: 100%;
+            height: auto;
+            min-height: 280px;
+            overflow: hidden;
+            border: 1px solid var(--dark-gray);
+        }
+
+        .product-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+        }
+
+        .product-image-container {
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 6px;
+            width: 100%;
+            height: 120px;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--primary);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 6px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--secondary);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 6px;
+            font-size: 0.55rem;
+            font-weight: 600;
+            z-index: 2;
+            max-width: 55px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .remove-favorite-btn {
+            position: absolute;
+            top: 30px;
+            right: 4px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--dark-gray);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            opacity: 1;
+            z-index: 3;
+            font-size: 0.55rem;
+            color: var(--text-color);
+        }
+
+        .remove-favorite-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .product-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .product-title {
+            font-weight: 600;
+            margin: 4px 0;
+            font-size: 0.7rem;
+            line-height: 1.2;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            height: 30px;
+            color: var(--text-color);
+        }
+
+        .product-title.expanded {
+            -webkit-line-clamp: unset;
+            height: auto;
+        }
+
+        .product-price {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+
+        .current-price {
+            font-weight: bold;
+            font-size: 0.8rem;
+            color: var(--primary);
+        }
+
+        .original-price {
+            font-size: 0.65rem;
+            color: var(--gray);
+            text-decoration: line-through;
+        }
+
+        .discount {
+            background: var(--success);
+            color: white;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-size: 0.55rem;
+            font-weight: 600;
+        }
+
+        .product-code {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 4px 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.65rem;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .code-label {
+            font-size: 0.6rem;
+            white-space: nowrap;
+        }
+
+        .code-value {
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 2px;
+            background: rgba(255,255,255,0.2);
+            font-weight: 600;
+            transition: var(--transition);
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+
+        .code-value:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            width: 100%;
+        }
+
+        .buy-btn {
+            flex: 2;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            white-space: nowrap;
+            min-height: 30px;
+        }
+
+        .buy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .wishlist-btn, .share-btn {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--dark-gray);
+            border-radius: 4px;
+            padding: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            color: var(--text-color);
+            min-width: 30px;
+            min-height: 30px;
+        }
+
+        .wishlist-btn.active {
+            background: #ff4757;
+            color: white;
+            border-color: #ff4757;
+        }
+
+        .wishlist-btn:hover, .share-btn:hover {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 12px;
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .loading-spinner {
+            border: 2px solid var(--dark-gray);
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 6px;
+        }
+
+        .loading p {
+            font-size: 0.75rem;
+            color: var(--text-color);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* End of Results */
+        .end-of-results {
+            text-align: center;
+            padding: 15px 8px;
+            color: var(--gray);
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .end-of-results i {
+            font-size: 1.3rem;
+            margin-bottom: 6px;
+            color: var(--gray);
+        }
+
+        .end-of-results h3 {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+
+        .end-of-results p {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        /* No Favorites Message */
+        .no-favorites {
+            text-align: center;
+            padding: 25px 8px;
+            color: var(--gray);
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .no-favorites i {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            color: var(--gray);
+        }
+
+        .no-favorites h3 {
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+            color: var(--text-color);
+        }
+
+        .no-favorites p {
+            font-size: 0.7rem;
+            color: var(--gray);
+        }
+
+        /* Copy Message */
+        .copy-msg {
+            position: fixed;
+            bottom: 12px;
+            right: 12px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            display: none;
+            box-shadow: 0 0 12px rgba(124,92,255,0.4);
+            z-index: 1003;
+            font-size: 0.75rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 12px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 350px;
+            max-height: 65vh;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+            border: 1px solid var(--dark-gray);
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--dark-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--header-bg);
+            color: white;
+        }
+
+        .modal-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            cursor: pointer;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modal-body {
+            padding: 0;
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        .categories-modal-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .category-modal-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--dark-gray);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-color);
+        }
+
+        .category-modal-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-modal-item:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .category-modal-item.active {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .category-name {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+        }
+
+        .category-count {
+            background: var(--dark-gray);
+            color: var(--text-color);
+            padding: 1px 5px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .category-modal-item:hover .category-count,
+        .category-modal-item.active .category-count {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (min-width: 400px) {
+            .search-bar {
+                max-width: none;
+            }
+            
+            .product-card {
+                min-height: 300px;
+            }
+            
+            .product-image-container {
+                height: 130px;
+            }
+            
+            .search-bar input {
+                font-size: 0.75rem;
+                padding: 5px 14px;
+            }
+            
+            .search-bar button {
+                padding: 0 14px;
+            }
+            
+            .logo {
+                height: 32px;
+            }
+        }
+
+        @media (min-width: 480px) {
+            .container {
+                padding: 0 12px;
+            }
+            
+            .header-content {
+                gap: 10px;
+            }
+            
+            .search-bar {
+                max-width: none;
+            }
+            
+            .search-bar input {
+                font-size: 0.8rem;
+                padding: 6px 16px;
+            }
+            
+            .search-bar button {
+                padding: 0 16px;
+                min-width: 40px;
+            }
+            
+            .language-btn {
+                font-size: 0.7rem;
+                padding: 4px 10px;
+            }
+            
+            .products-grid {
+                gap: 10px;
+            }
+            
+            .product-card {
+                min-height: 320px;
+            }
+            
+            .product-image-container {
+                height: 140px;
+            }
+            
+            .logo {
+                height: 34px;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                padding: 0 15px;
+            }
+            
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+            
+            .product-card {
+                padding: 10px;
+                min-height: 350px;
+            }
+            
+            .product-image-container {
+                height: 150px;
+            }
+            
+            .product-title {
+                font-size: 0.8rem;
+                height: 34px;
+            }
+            
+            .current-price {
+                font-size: 0.9rem;
+            }
+            
+            .product-code {
+                padding: 6px 8px;
+                font-size: 0.75rem;
+            }
+            
+            .buy-btn {
+                padding: 6px;
+                font-size: 0.75rem;
+            }
+            
+            .header-actions {
+                gap: 12px;
+            }
+            
+            .search-bar {
+                max-width: none;
+                margin-right: 12px;
+            }
+            
+            .search-bar input {
+                font-size: 0.85rem;
+                padding: 7px 18px;
+            }
+            
+            .search-bar button {
+                padding: 0 18px;
+                min-width: 44px;
+            }
+            
+            .language-btn {
+                font-size: 0.75rem;
+                padding: 5px 12px;
+            }
+            
+            .logo {
+                height: 36px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 15px;
+            }
+            
+            .product-card {
+                min-height: 380px;
+            }
+            
+            .product-image-container {
+                height: 160px;
+            }
+            
+            .container {
+                padding: 0 20px;
+            }
+            
+            .header-actions {
+                gap: 15px;
+            }
+            
+            .search-bar {
+                max-width: none;
+                margin-right: 15px;
+            }
+            
+            .search-bar input {
+                font-size: 0.9rem;
+                padding: 8px 20px;
+            }
+            
+            .search-bar button {
+                padding: 0 20px;
+                min-width: 48px;
+            }
+            
+            .logo {
+                height: 38px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .products-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 18px;
+            }
+            
+            .product-card {
+                min-height: 400px;
+            }
+            
+            .product-image-container {
+                height: 170px;
+            }
+            
+            .search-bar input {
+                font-size: 0.95rem;
+                padding: 9px 22px;
+            }
+            
+            .logo {
+                height: 40px;
+            }
+        }
+
+        /* Touch device improvements */
+        @media (hover: none) {
+            .product-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toast-message">Discount code copied!</span>
+    </div>
+
+    <!-- Copy Message -->
+    <div id="copyMsg" class="copy-msg">Coupon copied ✅</div>
+
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <!-- Logo -->
+                <div class="logo-container">
+                    <img src="https://i.hizliresim.com/kyoizyx.jpg" alt="Budget Buddy Logo" class="logo">
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="search-input" placeholder="Search products..." data-translate="searchPlaceholder">
+                        <button id="search-btn"><i class="fas fa-search"></i></button>
+                    </div>
+                    <div class="language-selector">
+                        <button class="language-btn" id="language-btn">
+                            <i class="fas fa-globe"></i>
+                            <span id="current-language">EN</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown" id="language-dropdown">
+                            <!-- Languages will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 data-translate="heroTitle">Best AliExpress Discounts</h1>
+            <p data-translate="heroSubtitle">Discover the most popular products with daily discount codes!</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <!-- Status Info -->
+        <div class="status-info" id="status-info">
+            <h3><i class="fas fa-sync-alt fa-spin"></i> <span data-translate="loadingProducts">Loading Products</span>...</h3>
+            <p data-translate="loadingDescription">Product information is being retrieved from the Excel file. Please wait.</p>
+        </div>
+
+        <!-- Home Page Button (Shows when no products are loaded) -->
+        <div class="home-page-btn-container" id="home-page-btn-container">
+            <a href="https://s.click.aliexpress.com/e/_c40uRQID" target="_blank" class="home-page-btn">
+                <i class="fas fa-home"></i>
+                <span>Home Page (Smart Links)</span>
+            </a>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" style="display: none;">
+            <!-- Categories - All Categories, Favorites and Sort buttons -->
+            <div class="categories" id="categories">
+                <button class="category-btn active" data-category="all" id="all-categories-btn">
+                    <i class="fas fa-th-large"></i> <span data-translate="allCategories">All Categories</span> (<span id="all-categories-count">0</span>)
+                </button>
+                <button class="category-btn" data-filter="favorites" id="favorites-filter-btn">
+                    <i class="fas fa-heart"></i> <span data-translate="filterFavorites">Favorites</span> (<span id="favorites-count-badge">0</span>)
+                </button>
+                <select class="sort-select" id="sort-select">
+                    <option value="default" data-translate="sortDefault">Sort</option>
+                    <option value="price-low" data-translate="sortPriceLow">Price ↑</option>
+                    <option value="price-high" data-translate="sortPriceHigh">Price ↓</option>
+                    <option value="discount" data-translate="sortDiscount">Discount</option>
+                    <option value="rating" data-translate="sortRating">Rating</option>
+                </select>
+            </div>
+
+            <!-- Favorites Management -->
+            <div class="favorites-management" id="favorites-management">
+                <div id="favorites-count" data-translate="favoritesCount">
+                    Total 0 favorite products
+                </div>
+                <button class="clear-favorites-btn" id="clear-all-favorites" data-translate="clearAllFavorites">
+                    Clear All Favorites
+                </button>
+            </div>
+
+            <!-- Products Grid -->
+            <div id="products" class="products-grid"></div>
+
+            <!-- Loading Indicator -->
+            <div class="loading" id="loading-indicator">
+                <div class="loading-spinner"></div>
+                <p data-translate="loadingMore">Loading more products...</p>
+            </div>
+
+            <!-- End of Results -->
+            <div class="end-of-results" id="end-of-results">
+                <i class="fas fa-flag-checkered"></i>
+                <h3 data-translate="endOfResultsTitle">You've viewed all products!</h3>
+                <p data-translate="endOfResultsDescription">You've viewed all listed products. Try a different category or filter for more results.</p>
+            </div>
+
+            <!-- No Favorites Message -->
+            <div class="no-favorites" id="no-favorites">
+                <i class="far fa-heart"></i>
+                <h3 data-translate="noFavoritesTitle">You don't have any favorite products yet</h3>
+                <p data-translate="noFavoritesDescription">Click the heart icon next to products you like to add them to favorites.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Modal -->
+    <div class="modal-overlay" id="categories-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" data-translate="allCategoriesModal">All Categories</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul class="categories-modal-list" id="categories-modal-list">
+                    <!-- Categories will be added by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="confirmation-modal" id="confirmation-modal">
+        <div class="confirmation-content">
+            <div class="confirmation-header">
+                <h3 class="confirmation-title" data-translate="confirmationTitle">Are you sure?</h3>
+                <button class="confirmation-close" id="confirmation-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="confirmation-body">
+                <p class="confirmation-message" data-translate="confirmationMessage">Are you sure you want to clear all your favorite products? This action cannot be undone.</p>
+                <div class="confirmation-actions">
+                    <button class="cancel-btn" id="cancel-clear" data-translate="cancelButton">No</button>
+                    <button class="confirm-btn" id="confirm-clear" data-translate="confirmButton">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Translations - All languages active
+        const translations = {
+            tr: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Ara...",
+                heroTitle: "En İyi İndirimler",
+                heroSubtitle: "Günlük indirim kodları ile popüler ürünler!",
+                loadingProducts: "Yükleniyor",
+                loadingDescription: "Ürünler hazırlanıyor...",
+                clearAllFavorites: "Tümünü Temizle",
+                favoritesCount: "{count} favori",
+                allCategories: "Tüm Kategoriler",
+                allCategoriesModal: "Tüm Kategoriler",
+                filterAll: "Tümü",
+                filterFavorites: "Favoriler",
+                sortDefault: "Sırala",
+                sortPriceLow: "Fiyat ↑",
+                sortPriceHigh: "Fiyat ↓",
+                sortDiscount: "İndirim",
+                sortRating: "Puan",
+                noFavoritesTitle: "Favori yok",
+                noFavoritesDescription: "Ürünleri favorilere ekleyin.",
+                loadingMore: "Daha fazla ürün yükleniyor...",
+                endOfResultsTitle: "Tüm ürünleri görüntülediniz!",
+                endOfResultsDescription: "Listelenen tüm ürünleri görüntülediniz. Daha fazla sonuç için farklı bir kategori veya filtre deneyebilirsiniz.",
+                footerAbout: "AliExpress",
+                footerDescription: "En iyi ürünler uygun fiyatlarla.",
+                footerLinks: "Bağlantılar",
+                footerHome: "Ana Sayfa",
+                footerPopular: "Popüler",
+                footerNew: "Yeni",
+                footerContact: "İletişim",
+                footerHelp: "Yardım",
+                footerFAQ: "SSS",
+                footerShipping: "Kargo",
+                footerReturn: "İade",
+                footerPrivacy: "Gizlilik",
+                footerRights: "Tüm hakları saklıdır.",
+                codeCopied: "Kopyalandı:",
+                addedToFavorites: "Favorilere eklendi",
+                removedFromFavorites: "Favorilerden çıkarıldı",
+                allFavoritesCleared: "Tüm favoriler temizlendi",
+                shareText: "Bu ürünü inceleyin!",
+                noProductsFound: "Ürün bulunamadı.",
+                discountCode: "Kod:",
+                buyNow: "Satın Al",
+                confirmationTitle: "Emin misiniz?",
+                confirmationMessage: "Tüm favori ürünlerinizi temizlemek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+                cancelButton: "Hayır",
+                confirmButton: "Evet"
+            },
+            en: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Search products...",
+                heroTitle: "Best Discounts",
+                heroSubtitle: "Daily discount codes for popular products!",
+                loadingProducts: "Loading",
+                loadingDescription: "Products preparing...",
+                clearAllFavorites: "Clear All",
+                favoritesCount: "{count} favorites",
+                allCategories: "All Categories",
+                allCategoriesModal: "All Categories",
+                filterAll: "All",
+                filterFavorites: "Favorites",
+                sortDefault: "Sort",
+                sortPriceLow: "Price ↑",
+                sortPriceHigh: "Price ↓",
+                sortDiscount: "Discount",
+                sortRating: "Rating",
+                noFavoritesTitle: "No Favorites",
+                noFavoritesDescription: "Add products to favorites.",
+                loadingMore: "Loading more products...",
+                endOfResultsTitle: "You've viewed all products!",
+                endOfResultsDescription: "You've viewed all listed products. Try a different category or filter for more results.",
+                footerAbout: "AliExpress",
+                footerDescription: "Best products at affordable prices.",
+                footerLinks: "Links",
+                footerHome: "Home",
+                footerPopular: "Popular",
+                footerNew: "New",
+                footerContact: "Contact",
+                footerHelp: "Help",
+                footerFAQ: "FAQ",
+                footerShipping: "Shipping",
+                footerReturn: "Returns",
+                footerPrivacy: "Privacy",
+                footerRights: "All rights reserved.",
+                codeCopied: "Copied:",
+                addedToFavorites: "Added to favorites",
+                removedFromFavorites: "Removed from favorites",
+                allFavoritesCleared: "All favorites cleared",
+                shareText: "Check this product!",
+                noProductsFound: "No products found.",
+                discountCode: "Code:",
+                buyNow: "Buy Now",
+                confirmationTitle: "Are you sure?",
+                confirmationMessage: "Are you sure you want to clear all your favorite products? This action cannot be undone.",
+                cancelButton: "No",
+                confirmButton: "Yes"
+            },
+            es: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Buscar...",
+                heroTitle: "Mejores Descuentos",
+                heroSubtitle: "¡Códigos de descuento diarios!",
+                loadingProducts: "Cargando",
+                loadingDescription: "Productos preparándose...",
+                clearAllFavorites: "Limpiar Todo",
+                favoritesCount: "{count} favoritos",
+                allCategories: "Todas las Categorías",
+                allCategoriesModal: "Todas las Categorías",
+                filterAll: "Todos",
+                filterFavorites: "Favoritos",
+                sortDefault: "Ordenar",
+                sortPriceLow: "Precio ↑",
+                sortPriceHigh: "Precio ↓",
+                sortDiscount: "Descuento",
+                sortRating: "Puntuación",
+                noFavoritesTitle: "Sin Favoritos",
+                noFavoritesDescription: "Agrega productos a favoritos.",
+                loadingMore: "Cargando más productos...",
+                endOfResultsTitle: "¡Has visto todos los productos!",
+                endOfResultsDescription: "Has visto todos los productos listados. Prueba una categoría o filtro diferente para más resultados.",
+                footerAbout: "AliExpress",
+                footerDescription: "Mejores productos a precios asequibles.",
+                footerLinks: "Enlaces",
+                footerHome: "Inicio",
+                footerPopular: "Popular",
+                footerNew: "Nuevo",
+                footerContact: "Contacto",
+                footerHelp: "Ayuda",
+                footerFAQ: "FAQ",
+                footerShipping: "Envío",
+                footerReturn: "Devolución",
+                footerPrivacy: "Privacidad",
+                footerRights: "Todos los derechos reservados.",
+                codeCopied: "Copiado:",
+                addedToFavorites: "Agregado a favoritos",
+                removedFromFavorites: "Eliminado de favoritos",
+                allFavoritesCleared: "Todos los favoritos eliminados",
+                shareText: "¡Mira este producto!",
+                noProductsFound: "No se encontraron productos.",
+                discountCode: "Código:",
+                buyNow: "Comprar",
+                confirmationTitle: "¿Estás seguro?",
+                confirmationMessage: "¿Estás seguro de que quieres eliminar todos tus productos favoritos? Esta acción no se puede deshacer.",
+                cancelButton: "No",
+                confirmButton: "Sí"
+            },
+            fr: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Rechercher...",
+                heroTitle: "Meilleures Promotions",
+                heroSubtitle: "Codes de réduction quotidiens !",
+                loadingProducts: "Chargement",
+                loadingDescription: "Produits en préparation...",
+                clearAllFavorites: "Tout Effacer",
+                favoritesCount: "{count} favoris",
+                allCategories: "Toutes les Catégories",
+                allCategoriesModal: "Toutes les Catégories",
+                filterAll: "Tous",
+                filterFavorites: "Favoris",
+                sortDefault: "Trier",
+                sortPriceLow: "Prix ↑",
+                sortPriceHigh: "Prix ↓",
+                sortDiscount: "Réduction",
+                sortRating: "Note",
+                noFavoritesTitle: "Aucun Favori",
+                noFavoritesDescription: "Ajoutez des productos aux favoris.",
+                loadingMore: "Chargement de plus de produits...",
+                endOfResultsTitle: "Vous avez vu tous les produits !",
+                endOfResultsDescription: "Vous avez vu todos los productos listados. Essayez une catégorie ou un filtre différent pour plus de résultats.",
+                footerAbout: "AliExpress",
+                footerDescription: "Meilleurs produits à prix abordables.",
+                footerLinks: "Liens",
+                footerHome: "Accueil",
+                footerPopular: "Populaire",
+                footerNew: "Nouveau",
+                footerContact: "Contact",
+                footerHelp: "Aide",
+                footerFAQ: "FAQ",
+                footerShipping: "Livraison",
+                footerReturn: "Retour",
+                footerPrivacy: "Confidentialité",
+                footerRights: "Tous droits réservés.",
+                codeCopied: "Copié :",
+                addedToFavorites: "Ajouté aux favoris",
+                removedFromFavorites: "Retiré des favoris",
+                allFavoritesCleared: "Tous les favoris effacés",
+                shareText: "Découvrez ce produit !",
+                noProductsFound: "Aucun produit trouvé.",
+                discountCode: "Code :",
+                buyNow: "Acheter",
+                confirmationTitle: "Êtes-vous sûr ?",
+                confirmationMessage: "Êtes-vous sûr de vouloir supprimer tous vos produits favoris ? Cette action ne peut pas être annulée.",
+                cancelButton: "Non",
+                confirmButton: "Oui"
+            },
+            de: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Suchen...",
+                heroTitle: "Beste Rabatte",
+                heroSubtitle: "Tägliche Rabattcodes für beliebte Produkte!",
+                loadingProducts: "Lädt",
+                loadingDescription: "Produkte werden vorbereitet...",
+                clearAllFavorites: "Alle löschen",
+                favoritesCount: "{count} Favoriten",
+                allCategories: "Alle Kategorien",
+                allCategoriesModal: "Alle Kategorien",
+                filterAll: "Alle",
+                filterFavorites: "Favoriten",
+                sortDefault: "Sortieren",
+                sortPriceLow: "Preis ↑",
+                sortPriceHigh: "Preis ↓",
+                sortDiscount: "Rabatt",
+                sortRating: "Bewertung",
+                noFavoritesTitle: "Keine Favoriten",
+                noFavoritesDescription: "Produkte zu Favoriten hinzufügen.",
+                loadingMore: "Lade mehr Produkte...",
+                endOfResultsTitle: "Sie haben alle Produkte gesehen!",
+                endOfResultsDescription: "Sie haben alle gelisteten Produkte gesehen. Versuchen Sie eine andere Kategorie ou filter für weitere Ergebnisse.",
+                footerAbout: "AliExpress",
+                footerDescription: "Beste Produkte zu erschwinglichen Preisen.",
+                footerLinks: "Links",
+                footerHome: "Startseite",
+                footerPopular: "Beliebt",
+                footerNew: "Neu",
+                footerContact: "Kontakt",
+                footerHelp: "Hilfe",
+                footerFAQ: "FAQ",
+                footerShipping: "Versand",
+                footerReturn: "Rückgabe",
+                footerPrivacy: "Datenschutz",
+                footerRights: "Alle Rechte vorbehalten.",
+                codeCopied: "Kopiert:",
+                addedToFavorites: "Zu Favoriten hinzugefügt",
+                removedFromFavorites: "Aus Favoriten entfernt",
+                allFavoritesCleared: "Alle Favoriten gelöscht",
+                shareText: "Schauen Sie sich dieses Produkt an!",
+                noProductsFound: "Keine Produkte gefunden.",
+                discountCode: "Code:",
+                buyNow: "Jetzt kaufen",
+                confirmationTitle: "Sind Sie sicher?",
+                confirmationMessage: "Sind Sie sicher, dass Sie alle Ihre Lieblingsprodukte löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+                cancelButton: "Nein",
+                confirmButton: "Ja"
+            },
+            ru: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "Поиск...",
+                heroTitle: "Лучшие скидки",
+                heroSubtitle: "Ежедневные коды скидок на популярные товары!",
+                loadingProducts: "Загрузка",
+                loadingDescription: "Товары подготавливаются...",
+                clearAllFavorites: "Очистить все",
+                favoritesCount: "{count} избранных",
+                allCategories: "Все категории",
+                allCategoriesModal: "Все категории",
+                filterAll: "Все",
+                filterFavorites: "Избранное",
+                sortDefault: "Сортировать",
+                sortPriceLow: "Цена ↑",
+                sortPriceHigh: "Цена ↓",
+                sortDiscount: "Скидка",
+                sortRating: "Рейтинг",
+                noFavoritesTitle: "Нет избранных",
+                noFavoritesDescription: "Добавьте товары в избранное.",
+                loadingMore: "Загрузка больше товаров...",
+                endOfResultsTitle: "Вы просмотрели все товары!",
+                endOfResultsDescription: "Вы просмотрели все товары в списке. Попробуйте другую категорию или фильтр для получения дополнительных результатов.",
+                footerAbout: "AliExpress",
+                footerDescription: "Лучшие товары по доступным ценам.",
+                footerLinks: "Ссылки",
+                footerHome: "Главная",
+                footerPopular: "Популярные",
+                footerNew: "Новинки",
+                footerContact: "Контакты",
+                footerHelp: "Помощь",
+                footerFAQ: "FAQ",
+                footerShipping: "Доставка",
+                footerReturn: "Возврат",
+                footerPrivacy: "Конфиденциальность",
+                footerRights: "Все права защищены.",
+                codeCopied: "Скопировано:",
+                addedToFavorites: "Добавлено в избранное",
+                removedFromFavorites: "Удалено из избранного",
+                allFavoritesCleared: "Все избранные очищены",
+                shareText: "Посмотрите этот товар!",
+                noProductsFound: "Товары не найдены.",
+                discountCode: "Код:",
+                buyNow: "Купить",
+                confirmationTitle: "Вы уверены?",
+                confirmationMessage: "Вы уверены, что хотите очистить все ваши избранные товары? Это действие нельзя отменить.",
+                cancelButton: "Нет",
+                confirmButton: "Да"
+            },
+            ar: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "بحث...",
+                heroTitle: "أفضل الخصومات",
+                heroSubtitle: "رموز الخصم اليومية للمنتجات الشعبية!",
+                loadingProducts: "جار التحميل",
+                loadingDescription: "يتم تحضير المنتجات...",
+                clearAllFavorites: "مسح الكل",
+                favoritesCount: "{count} مفضل",
+                allCategories: "جميع الفئات",
+                allCategoriesModal: "جميع الفئات",
+                filterAll: "الكل",
+                filterFavorites: "المفضلة",
+                sortDefault: "ترتيب",
+                sortPriceLow: "السعر ↑",
+                sortPriceHigh: "السعر ↓",
+                sortDiscount: "خصم",
+                sortRating: "تقييم",
+                noFavoritesTitle: "لا توجد مفضلات",
+                noFavoritesDescription: "أضف المنتجات إلى المفضلة.",
+                loadingMore: "جاري تحميل المزيد من المنتجات...",
+                endOfResultsTitle: "لقد شاهدت جميع المنتجات!",
+                endOfResultsDescription: "لقد شاهدت جميع المنتجات المدرجة. جرب فئة أو مرشحًا مختلفًا لمزيد من النتائج.",
+                footerAbout: "AliExpress",
+                footerDescription: "أفضل المنتجات بأسعار معقولة.",
+                footerLinks: "روابط",
+                footerHome: "الرئيسية",
+                footerPopular: "الأكثر شهرة",
+                footerNew: "الجديد",
+                footerContact: "اتصل بنا",
+                footerHelp: "المساعدة",
+                footerFAQ: "الأسئلة الشائعة",
+                footerShipping: "الشحن",
+                footerReturn: "الإرجاع",
+                footerPrivacy: "الخصوصية",
+                footerRights: "جميع الحقوق محفوظة.",
+                codeCopied: "تم النسخ:",
+                addedToFavorites: "تمت الإضافة إلى المفضلة",
+                removedFromFavorites: "تمت الإزالة من المفضلة",
+                allFavoritesCleared: "تم مسح جميع المفضلة",
+                shareText: "تحقق من هذا المنتج!",
+                noProductsFound: "لم يتم العثور على منتجات.",
+                discountCode: "كود:",
+                buyNow: "اشتر الآن",
+                confirmationTitle: "هل أنت متأكد؟",
+                confirmationMessage: "هل أنت متأكد أنك تريد مسح جميع منتجاتك المفضلة؟ لا يمكن التراجع عن هذا الإجراء.",
+                cancelButton: "لا",
+                confirmButton: "نعم"
+            },
+            zh: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "搜索...",
+                heroTitle: "最佳折扣",
+                heroSubtitle: "热门产品每日折扣码！",
+                loadingProducts: "加载中",
+                loadingDescription: "产品准备中...",
+                clearAllFavorites: "全部清除",
+                favoritesCount: "{count} 收藏",
+                allCategories: "所有类别",
+                allCategoriesModal: "所有类别",
+                filterAll: "全部",
+                filterFavorites: "收藏夹",
+                sortDefault: "排序",
+                sortPriceLow: "价格 ↑",
+                sortPriceHigh: "价格 ↓",
+                sortDiscount: "折扣",
+                sortRating: "评分",
+                noFavoritesTitle: "无收藏",
+                noFavoritesDescription: "将产品添加到收藏夹。",
+                loadingMore: "加载更多产品...",
+                endOfResultsTitle: "您已查看所有产品！",
+                endOfResultsDescription: "您已查看所有列出的产品。尝试不同的类别或过滤器以获得更多结果。",
+                footerAbout: "AliExpress",
+                footerDescription: "实惠价格的最佳产品。",
+                footerLinks: "链接",
+                footerHome: "首页",
+                footerPopular: "热门",
+                footerNew: "新品",
+                footerContact: "联系我们",
+                footerHelp: "帮助",
+                footerFAQ: "常见问题",
+                footerShipping: "运输",
+                footerReturn: "退货",
+                footerPrivacy: "隐私",
+                footerRights: "保留所有权利。",
+                codeCopied: "已复制：",
+                addedToFavorites: "已添加到收藏夹",
+                removedFromFavorites: "已从收藏夹移除",
+                allFavoritesCleared: "所有收藏已清除",
+                shareText: "查看此产品！",
+                noProductsFound: "未找到产品。",
+                discountCode: "代码：",
+                buyNow: "立即购买",
+                confirmationTitle: "您确定吗？",
+                confirmationMessage: "您确定要清除所有收藏产品吗？此操作无法撤消。",
+                cancelButton: "否",
+                confirmButton: "是"
+            },
+            ja: {
+                siteTitle: "Budget Buddy",
+                searchPlaceholder: "検索...",
+                heroTitle: "ベストディスカウント",
+                heroSubtitle: "人気商品の毎日割引コード！",
+                loadingProducts: "読み込み中",
+                loadingDescription: "商品を準備中...",
+                clearAllFavorites: "すべてクリア",
+                favoritesCount: "{count} お気に入り",
+                allCategories: "すべてのカテゴリー",
+                allCategoriesModal: "すべてのカテゴリー",
+                filterAll: "すべて",
+                filterFavorites: "お気に入り",
+                sortDefault: "並び替え",
+                sortPriceLow: "価格 ↑",
+                sortPriceHigh: "価格 ↓",
+                sortDiscount: "割引",
+                sortRating: "評価",
+                noFavoritesTitle: "お気に入りなし",
+                noFavoritesDescription: "商品をお気に入りに追加します。",
+                loadingMore: "さらに商品を読み込み中...",
+                endOfResultsTitle: "すべての商品を表示しました！",
+                endOfResultsDescription: "リストされたすべての商品を表示しました。より多くの结果を得るために、别のカテゴリーやフィルターをお試しください。",
+                footerAbout: "AliExpress",
+                footerDescription: "お手頃価格のベスト商品。",
+                footerLinks: "リンク",
+                footerHome: "ホーム",
+                footerPopular: "人気",
+                footerNew: "新着",
+                footerContact: "お問い合わせ",
+                footerHelp: "ヘルプ",
+                footerFAQ: "よくある質問",
+                footerShipping: "配送",
+                footerReturn: "返品",
+                footerPrivacy: "プライバシー",
+                footerRights: "全著作権所有。",
+                codeCopied: "コピー済み：",
+                addedToFavorites: "お気に入りに追加されました",
+                removedFromFavorites: "お気に入りから削除されました",
+                allFavoritesCleared: "すべてのお気に入りがクリアされました",
+                shareText: "この商品をチェック！",
+                noProductsFound: "商品が見つかりません。",
+                discountCode: "コード：",
+                buyNow: "購入する",
+                confirmationTitle: "よろしいですか？",
+                confirmationMessage: "すべてのお気に入り商品をクリアしてもよろしいですか？この操作は元に戻せません。",
+                cancelButton: "いいえ",
+                confirmButton: "はい"
+            }
+        };
+
+        // Global variables
+        let allProducts = [];
+        let displayedProducts = 0;
+        const productsPerPage = 50;
+        let currentFilter = 'all';
+        let currentCategory = 'all';
+        let currentSort = 'default';
+        let isLoading = false;
+        let hasMoreProducts = true;
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let currentLanguage = localStorage.getItem('language') || 'en'; // English as default
+        
+        // Infinite scroll variables
+        let filteredProducts = [];
+        let currentDisplayedCount = 0;
+
+        // DOM Elements
+        const productsGrid = document.getElementById('products');
+        const statusInfo = document.getElementById('status-info');
+        const mainContent = document.getElementById('main-content');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const categoriesContainer = document.getElementById('categories');
+        const favoritesManagement = document.getElementById('favorites-management');
+        const noFavorites = document.getElementById('no-favorites');
+        const endOfResults = document.getElementById('end-of-results');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const copyMsg = document.getElementById('copyMsg');
+        const homePageBtnContainer = document.getElementById('home-page-btn-container');
+        
+        // Modal Elements
+        const categoriesModal = document.getElementById('categories-modal');
+        const categoriesModalList = document.getElementById('categories-modal-list');
+        const modalClose = document.getElementById('modal-close');
+        const allCategoriesBtn = document.getElementById('all-categories-btn');
+        const favoritesFilterBtn = document.getElementById('favorites-filter-btn');
+
+        // Confirmation Modal Elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmationClose = document.getElementById('confirmation-close');
+        const cancelClearBtn = document.getElementById('cancel-clear');
+        const confirmClearBtn = document.getElementById('confirm-clear');
+
+        // Excel URL
+        const EXCEL_FILE_URL = './data22.xls';
+
+        // AliExpress Categories and Keywords
+        const categoryKeywords = {
+            'Automotive & Motorcycle': [
+                'car', 'auto', 'automotive', 'motorcycle', 'motorbike', 'bike', 'scooter', 'vehicle', 'tire', 'tyre', 'wheel', 'rim', 'alloy', 'engine', 'motor',
+                'brake', 'pad', 'disc', 'rotor', 'exhaust', 'muffler', 'catalytic converter', 'headlight', 'headlamp', 'fog light', 'taillight', 'indicator', 'signal light',
+                'mirror', 'side mirror', 'rearview', 'seat', 'seat cover', 'steering wheel', 'helmet', 'full face', 'modular', 'gloves', 'jacket', 'riding pants', 'boots',
+                'oil', 'engine oil', 'transmission fluid', 'coolant', 'filter', 'oil filter', 'air filter', 'cabin filter', 'battery', 'car battery', 'charger', 'jump starter',
+                'tool', 'tool kit', 'wrench', 'socket set', 'diagnostic tool', 'accessory', 'car parts', 'oem', 'aftermarket', 'gps', 'navigation', 'dash cam', 'dash camera',
+                'car camera', 'rear camera', 'parking sensor', 'car audio', 'speaker', 'subwoofer', 'amplifier', 'tweeter', 'head unit', 'alarm', 'security system', 'immobilizer',
+                'lock', 'steering lock', 'wheel lock', 'cover', 'car cover', 'bike cover', 'mat', 'floor mat', 'cargo mat', 'cleaner', 'car wash', 'polish', 'wax', 'ceramic coating',
+                'detailing', 'clay bar', 'microfiber', 'maintenance', 'service', 'care', 'performance', 'tuning', 'chip', 'suspension', 'shock absorber', 'coilover', 'body kit', 'spoiler'
+            ],
+            'Beauty & Health': [
+                'makeup', 'cosmetic', 'skincare', 'beauty', 'health', 'wellness', 'facial', 'cream', 'lotion', 'body lotion', 'serum', 'face serum', 'moisturizer',
+                'cleanser', 'face wash', 'toner', 'astringent', 'mask', 'sheet mask', 'clay mask', 'makeup brush', 'brush set', 'beauty blender', 'sponge', 'palette', 'eyeshadow palette',
+                'lipstick', 'lip gloss', 'lip liner', 'mascara', 'eyeliner', 'eyeshadow', 'foundation', 'bb cream', 'cc cream', 'concealer', 'color corrector', 'blush', 'bronzer',
+                'highlighter', 'contour', 'setting powder', 'setting spray', 'perfume', 'fragrance', 'eau de toilette', 'eau de parfum', 'deodorant', 'antiperspirant', 'roll on',
+                'shampoo', 'conditioner', 'hair mask', 'hair oil', 'hair care', 'styling', 'hair gel', 'wax', 'pomade', 'hair spray', 'hair dryer', 'blow dryer', 'straightener', 'flat iron',
+                'curler', 'curling iron', 'trimmer', 'hair clipper', 'shaver', 'electric shaver', 'epilator', 'ipl', 'laser', 'massager', 'face massager', 'scalp massager',
+                'scale', 'body scale', 'smart scale', 'thermometer', 'infrared thermometer', 'blood pressure', 'blood pressure monitor', 'pulse oximeter', 'fitness', 'fitness tracker',
+                'vitamin', 'multivitamin', 'supplement', 'collagen', 'biotin', 'omega 3', 'probiotic', 'anti aging', 'organic', 'natural', 'cruelty free', 'sunscreen', 'spf', 'self tan'
+            ],
+            'Phones & Telecommunications': [
+                'smartphone', 'mobile phone', 'cell phone', 'iphone', 'samsung galaxy', 'huawei', 'xiaomi', 'redmi', 'oppo', 'vivo', 'oneplus', 'google pixel', 'android', 'ios',
+                '5g', '4g', 'lte', 'case', 'phone case', 'protective case', 'cover', 'back cover', 'bumper case', 'screen protector', 'tempered glass', 'film protector',
+                'charger', 'fast charger', 'wireless charger', 'charger dock', 'cable', 'charging cable', 'usb c cable', 'lightning cable', 'adapter', 'wall adapter', 'car adapter',
+                'power bank', 'portable charger', 'power bank case', 'headphone', 'earphone', 'earbud', 'wireless earbud', 'true wireless', 'neckband', 'bluetooth', 'bluetooth speaker',
+                'wireless', 'smartwatch', 'apple watch', 'galaxy watch', 'fitness band', 'watch', 'wearable', 'tablet', 'ipad', 'android tablet', 'accessory', 'stylus', 'pen',
+                'sim card', 'nano sim', 'e sim', 'router', 'wifi router', 'mesh router', 'modem', 'dsl modem', 'antenna', 'signal booster', 'repeater', 'range extender',
+                'telecommunication', 'voip', 'headset', 'hands free', 'car kit', 'mount', 'car mount', 'desk mount', 'pop socket', 'grip', 'sim tool', 'cleaning kit'
+            ],
+            'Home Improvement & Lighting': [
+                'home improvement', 'lighting', 'lamp', 'light', 'led', 'bulb', 'smart bulb', 'filament bulb', 'fixture', 'ceiling light', 'chandelier', 'pendant light',
+                'wall light', 'sconce', 'floor lamp', 'standing lamp', 'desk lamp', 'reading light', 'outdoor light', 'garden light', 'path light', 'floodlight', 'security light',
+                'solar', 'solar light', 'solar panel', 'motion', 'motion sensor light', 'sensor', 'light sensor', 'switch', 'light switch', 'dimmer switch', 'smart switch',
+                'outlet', 'power outlet', 'usb outlet', 'extension', 'extension cord', 'power strip', 'surge protector', 'cord', 'cable', 'wire', 'tool', 'hand tool', 'power tool',
+                'drill', 'cordless drill', 'impact driver', 'saw', 'circular saw', 'jigsaw', 'hammer', 'screwdriver', 'wrench', 'socket wrench', 'pliers', 'cutter', 'wire stripper',
+                'tape', 'measuring tape', 'electrical tape', 'measure', 'laser measure', 'level', 'spirit level', 'laser level', 'paint', 'wall paint', 'spray paint', 'brush', 'paint brush',
+                'roller', 'paint roller', 'toolbox', 'tool bag', 'ladder', 'step ladder', 'extension ladder', 'safety', 'safety glasses', 'gloves', 'helmet', 'workwear', 'apron',
+                'storage', 'tool storage', 'shelf', 'wall shelf', 'floating shelf', 'rack', 'tool rack', 'organization', 'tool organizer', 'workbench', 'vise', 'clamp'
+            ],
+            'Jewelry, Watches & Accessories': [
+                'jewelry', 'watch', 'accessory', 'necklace', 'pendant necklace', 'choker', 'bracelet', 'bangle', 'cuff', 'ring', 'engagement ring', 'wedding band',
+                'earring', 'stud earring', 'hoop earring', 'drop earring', 'pendant', 'locket', 'chain', 'rope chain', 'cuban link', 'anklet', 'toe ring', 'brooch',
+                'cufflink', 'tie clip', 'tie bar', 'money clip', 'keychain', 'car keychain', 'sunglasses', 'polarized sunglasses', 'glasses', 'reading glasses',
+                'case', 'eyeglass case', 'watch case', 'luxury', 'designer', 'fashion', 'statement', 'diamond', 'gold', 'white gold', 'yellow gold', 'rose gold',
+                'silver', 'sterling silver', 'platinum', 'pearl', 'freshwater pearl', 'crystal', 'swarovski', 'gemstone', 'sapphire', 'ruby', 'emerald',
+                'birthstone', 'zodiac', 'engraving', 'personalized', 'monogram', 'custom', 'smart watch', 'hybrid watch', 'fitness tracker', 'activity band',
+                'watch band', 'strap', 'leather strap', 'metal band', 'nato strap', 'watch box', 'jewelry box', 'jewelry cleaner', 'watch winder', 'travel case'
+            ],
+            'Womens Clothing': [
+                'women', 'womens', 'clothing', 'apparel', 'fashion', 'dress', 'maxi dress', 'midi dress', 'bodycon dress', 'skirt', 'pencil skirt', 'pleated skirt',
+                'blouse', 'shirt', 'button down shirt', 'top', 'tank top', 'crop top', 't-shirt', 'graphic tee', 'sweater', 'pullover', 'cardigan', 'knit cardigan',
+                'jacket', 'denim jacket', 'leather jacket', 'bomber jacket', 'coat', 'trench coat', 'wool coat', 'hoodie', 'zip hoodie', 'sweatshirt', 'crewneck',
+                'pants', 'trousers', 'wide leg pants', 'palazzo pants', 'jeans', 'skinny jeans', 'bootcut jeans', 'leggings', 'yoga pants', 'shorts', 'denim shorts',
+                'jumpsuit', 'romper', 'playsuit', 'lingerie', 'bra', 'bralette', 'sports bra', 'panties', 'thong', 'briefs', 'shapewear', 'bodysuit', 'corset',
+                'swimwear', 'bikini', 'one piece', 'tankini', 'swimsuit', 'cover up', 'beach dress', 'activewear', 'athleisure', 'yoga', 'pilates', 'fitness',
+                'workout', 'gym wear', 'socks', 'ankle socks', 'knee high socks', 'tights', 'stockings', 'pantyhose', 'maternity', 'pregnancy', 'nursing',
+                'plus size', 'curvy', 'petite', 'tall', 'occasion', 'evening', 'casual', 'business', 'office', 'streetwear', 'vintage', 'sustainable', 'organic cotton'
+            ],
+            'Electronics': [
+                'electronics', 'electronic', 'gadget', 'device', 'tech', 'technology', 'smart', 'smart home', 'home automation', 'iot', 'audio', 'video',
+                'tv', 'television', 'smart tv', 'oled tv', 'monitor', 'computer monitor', 'gaming monitor', 'display', 'touchscreen', 'projector', 'home projector',
+                'speaker', 'bluetooth speaker', 'portable speaker', 'soundbar', 'surround sound', 'home theater', 'headphone', 'over ear headphone', 'earphone',
+                'microphone', 'condenser mic', 'usb microphone', 'camera', 'digital camera', 'mirrorless', 'dslr', 'lens', 'zoom lens', 'prime lens', 'drone',
+                'camera drone', 'fpv drone', 'action', 'action camera', 'gopro', 'insta360', 'tripod', 'camera tripod', 'gimbal', 'stabilizer', 'handheld gimbal',
+                'computer', 'pc', 'desktop computer', 'all in one', 'laptop', 'gaming laptop', 'chromebook', 'tablet', '2 in 1 laptop', 'printer', 'inkjet printer',
+                'laser printer', 'scanner', 'document scanner', 'keyboard', 'mechanical keyboard', 'wireless keyboard', 'mouse', 'gaming mouse', 'wireless mouse',
+                'webcam', 'hd webcam', 'streaming webcam', 'router', 'wifi 6 router', 'gaming router', 'nas', 'network attached storage', 'storage', 'external hard drive',
+                'ssd', 'flash drive', 'usb drive', 'hub', 'usb hub', 'docking station', 'charger', 'multi port charger', 'cable', 'hdmi cable', 'adapter', 'dongle'
+            ],
+            'Mens Clothing': [
+                'men', 'mens', 'clothing', 'apparel', 'fashion', 'shirt', 'dress shirt', 'oxford shirt', 'flannel shirt', 't-shirt', 'pocket tee', 'henley shirt',
+                'polo', 'polo shirt', 'golf polo', 'button down', 'casual shirt', 'sweater', 'crewneck sweater', 'v neck sweater', 'hoodie', 'pullover hoodie',
+                'sweatshirt', 'fleece sweatshirt', 'jacket', 'bomber jacket', 'harrington jacket', 'field jacket', 'coat', 'pea coat', 'duffle coat', 'blazer',
+                'suit', 'business suit', 'tuxedo', 'pants', 'dress pants', 'chinos', 'khakis', 'cargo pants', 'jeans', 'slim fit jeans', 'relaxed fit jeans',
+                'shorts', 'cargo shorts', 'chino shorts', 'swimwear', 'swim trunks', 'board shorts', 'underwear', 'boxers', 'boxer briefs', 'trunks', 'briefs',
+                'socks', 'dress socks', 'athletic socks', 'tie', 'neck tie', 'bow tie', 'belt', 'leather belt', 'reversible belt', 'wallet', 'bifold wallet',
+                'accessory', 'pocket square', 'suspenders', 'workwear', 'coveralls', 'work pants', 'uniform', 'scrubs', 'activewear', 'gym shorts', 'fitness',
+                'outdoor', 'hiking pants', 'fishing shirt', 'hunting jacket', 'formal', 'black tie', 'business', 'business casual', 'casual', 'streetwear',
+                'skatewear', 'sustainable', 'performance', 'wrinkle free', 'moisture wicking', 'thermoregulating'
+            ],
+            'Home & Garden': [
+                'home', 'garden', 'yard', 'furniture', 'home decor', 'decoration', 'ornament', 'accessory', 'kitchen', 'kitchenware', 'cookware', 'bakeware',
+                'bath', 'bathroom', 'shower', 'bedroom', 'master bedroom', 'living', 'living room', 'lounge', 'dining', 'dining room', 'outdoor', 'patio',
+                'balcony', 'lawn', 'grass', 'plant', 'houseplant', 'succulent', 'flower', 'cut flowers', 'pot', 'planter', 'hanging planter', 'vase', 'flower vase',
+                'candle', 'scented candle', 'soy candle', 'diffuser', 'reed diffuser', 'essential oil', 'wall art', 'canvas print', 'poster', 'picture', 'photo frame',
+                'frame', 'poster frame', 'clock', 'wall clock', 'alarm clock', 'mirror', 'wall mirror', 'floor mirror', 'rug', 'area rug', 'runner rug', 'carpet',
+                'mat', 'doormat', 'welcome mat', 'curtain', 'drapes', 'blackout curtain', 'blind', 'window blind', 'roller blind', 'shade', 'roman shade',
+                'pillow', 'throw pillow', 'cushion', 'seat cushion', 'blanket', 'throw blanket', 'weighted blanket', 'bedding', 'bed sheet', 'duvet', 'duvet cover',
+                'comforter', 'quilt', 'bedspread', 'towel', 'bath towel', 'beach towel', 'bath mat', 'shower curtain', 'storage', 'basket', 'bin', 'hamper',
+                'organization', 'shelf organizer', 'closet organizer', 'gardening', 'tool', 'watering can', 'hose', 'pruner', 'soil', 'fertilizer', 'seed'
+            ],
+            'Toys & Games': [
+                'toy', 'game', 'play', 'kids', 'children', 'child', 'baby', 'toddler', 'educational', 'learning', 'development', 'cognitive', 'motor skill',
+                'puzzle', 'jigsaw puzzle', '3d puzzle', 'building', 'building block', 'lego', 'lego set', 'brick', 'doll', 'barbie doll', 'baby doll', 'action figure',
+                'collectible figure', 'vehicle', 'toy car', 'diecast car', 'truck', 'monster truck', 'plane', 'airplane', 'train', 'train set', 'robot', 'robotic kit',
+                'rc', 'remote control', 'radio control', 'drone', 'toy drone', 'helicopter', 'rc helicopter', 'board game', 'family board game', 'strategy game',
+                'card game', 'playing cards', 'uno', 'puzzle game', 'brain teaser', 'video game', 'console', 'playstation', 'xbox', 'nintendo switch', 'controller',
+                'gaming controller', 'vr', 'virtual reality', 'vr headset', 'ar', 'outdoor', 'playground', 'swing set', 'slide', 'playset', 'trampoline', 'bounce house',
+                'sports toy', 'ball', 'football', 'basketball set', 'water toy', 'squirt gun', 'pool toy', 'art', 'craft', 'clay', 'play doh', 'science kit', 'stem toy',
+                'musical toy', 'xylophone', 'drum set', 'costume', 'role play', 'playsilk', 'stuffed animal', 'plush toy', 'teddy bear', 'kite', 'bubble', 'fidget toy'
+            ],
+            'Luggage, Bags & Shoes': [
+                'luggage', 'bag', 'shoe', 'footwear', 'travel', 'suitcase', 'hard shell suitcase', 'spinner luggage', 'carry on', 'travel backpack', 'backpack',
+                'school backpack', 'hiking backpack', 'handbag', 'shoulder bag', 'crossbody bag', 'purse', 'clutch', 'evening bag', 'wallet', 'cardholder',
+                'money clip wallet', 'briefcase', 'laptop briefcase', 'messenger', 'messenger bag', 'tote', 'shopping tote', 'laptop tote', 'duffel', 'gym duffel',
+                'weekender bag', 'garment', 'garment bag', 'suit bag', 'cosmetic', 'makeup bag', 'toiletry bag', 'laptop', 'laptop bag', 'laptop sleeve',
+                'sneaker', 'athletic shoe', 'running shoe', 'training shoe', 'walking', 'walking shoe', 'comfort shoe', 'hiking', 'hiking boot', 'trail shoe',
+                'boot', 'ankle boot', 'chelsea boot', 'dress', 'dress shoe', 'oxford shoe', 'loafer', 'casual', 'slip on', 'espadrille', 'sandals', 'slide sandal',
+                'flip flop', 'slipper', 'house slipper', 'memory foam slipper', 'heel', 'high heel', 'stiletto', 'pump', 'flat', 'ballet flat', 'moccasin',
+                'accessory', 'shoe horn', 'shoe tree', 'shoe polish', 'organizer', 'packing cube', 'luggage tag', 'lock', 'tsa lock', 'strap', 'luggage strap'
+            ],
+            'Furniture': [
+                'furniture', 'furnishing', 'home furniture', 'table', 'coffee table', 'side table', 'console table', 'desk', 'writing desk', 'standing desk',
+                'chair', 'dining chair', 'accent chair', 'armchair', 'sofa', 'sofa bed', 'futon', 'couch', 'sectional sofa', 'modular sofa', 'loveseat',
+                'sectional', 'chaise lounge', 'recliner', 'reclining chair', 'massage chair', 'ottoman', 'storage ottoman', 'bench', 'entryway bench',
+                'storage bench', 'stool', 'bar stool', 'counter stool', 'bed', 'platform bed', 'storage bed', 'mattress', 'memory foam mattress', 'hybrid mattress',
+                'headboard', 'upholstered headboard', 'dresser', 'chest of drawers', 'chest', 'hope chest', 'wardrobe', 'closet wardrobe', 'armoire', 'tv armoire',
+                'cabinet', 'display cabinet', 'storage cabinet', 'shelf', 'floating shelf', 'corner shelf', 'bookcase', 'bookshelf', 'entertainment', 'entertainment center',
+                'tv stand', 'media console', 'tv console', 'coffee', 'nesting table', 'end', 'end table', 'nightstand', 'bedside table', 'dining', 'dining table',
+                'extendable table', 'kitchen', 'kitchen island', 'kitchen cart', 'bar', 'bar cabinet', 'counter', 'kitchen counter', 'island', 'patio', 'patio set',
+                'garden', 'garden bench', 'outdoor', 'outdoor sofa', 'all weather wicker', 'office', 'office chair', 'executive chair', 'ergonomic', 'ergonomic chair',
+                'gaming', 'gaming chair', 'gaming desk', 'children', 'kids furniture', 'nursery furniture', 'rocking chair', 'accent furniture', 'shoe rack', 'coat rack'
+            ],
+            'Computer, Office & Education': [
+                'computer', 'office', 'education', 'school', 'work', 'laptop', 'business laptop', 'gaming laptop', 'desktop', 'all in one desktop', 'gaming pc',
+                'monitor', 'ultrawide monitor', '4k monitor', 'keyboard', 'wireless keyboard', 'mechanical keyboard', 'mouse', 'wireless mouse', 'ergonomic mouse',
+                'printer', 'all in one printer', 'ink tank printer', 'scanner', 'document scanner', 'sheetfed scanner', 'copier', 'multifunction copier', 'fax',
+                'fax machine', 'projector', 'portable projector', 'laser projector', 'screen', 'projection screen', 'whiteboard', 'interactive whiteboard',
+                'dry erase board', 'desk', 'executive desk', 'l shaped desk', 'chair', 'task chair', 'mesh chair', 'filing', 'filing cabinet', 'lateral file',
+                'cabinet', 'storage cabinet', 'shelf', 'book shelf', 'organizer', 'desk organizer', 'drawer organizer', 'supply', 'office supply', 'stationery',
+                'pen', 'ballpoint pen', 'fountain pen', 'pencil', 'mechanical pencil', 'marker', 'dry erase marker', 'highlighter', 'notebook', 'spiral notebook',
+                'binder', 'ring binder', 'folder', 'file folder', 'hanging folder', 'calculator', 'scientific calculator', 'graphing calculator', 'ruler',
+                'stapler', 'electric stapler', 'staple', 'staple remover', 'tape', 'double sided tape', 'masking tape', 'glue', 'glue stick', 'hot glue gun',
+                'scissors', 'paper trimmer', 'paper shredder', 'educational', 'learning toy', 'teaching aid', 'science', 'science kit', 'microscope', 'telescope',
+                'globes', 'maps', 'flashcards', 'desk lamp', 'chair mat', 'waste bin', 'recycling bin', 'name plate', 'office plant', 'air purifier', 'standing desk converter'
+            ],
+            'Hair Extensions & Wigs': [
+                'hair', 'extension', 'wig', 'hairpiece', 'toupee', 'weave', 'clip-in', 'clip in extensions', 'tape-in', 'tape in extensions', 'fusion',
+                'micro link', 'micro bead', 'strand', 'strand extension', 'bundle', 'hair bundle', 'closure', 'lace closure', 'frontal', '360 frontal',
+                'lace', 'lace front wig', 'full lace wig', 'synthetic', 'synthetic hair', 'kanekalon', 'human', 'human hair', 'remy', 'remy hair', 'cuticle aligned',
+                'virgin', 'virgin hair', 'unprocessed', 'straight', 'bone straight', 'body wave', 'wavy', 'deep wave', 'curly', 'kinky curly', 'coily',
+                'kinky', 'afro texture', 'color', 'hair color', 'dye', 'hair dye', 'highlight', 'highlights', 'ombre', 'balayage', 'sombre', 'rooted',
+                'styling', 'hair styling', 'hair care', 'shampoo', 'sulfate free shampoo', 'conditioner', 'deep conditioner', 'treatment', 'hair mask',
+                'oil', 'hair oil', 'argon oil', 'brush', 'detangling brush', 'vent brush', 'comb', 'wide tooth comb', 'dryer', 'hair dryer', 'diffuser',
+                'iron', 'flat iron', 'curling iron', 'curler', 'wand curler', 'accessory', 'hair clip', 'scrunchy', 'cap', 'wig cap', 'stand', 'wig stand',
+                'mannequin head', 'adhesive', 'wig glue', 'tape', 'scalp protector', 'plucking', 'bleaching knots', 'customization', 'hair sample', 'hair chart'
+            ],
+            'Sports & Entertainment': [
+                'sports', 'sport', 'entertainment', 'fitness', 'exercise', 'workout', 'gym', 'home gym', 'yoga', 'yoga mat', 'yoga block', 'pilates',
+                'pilates reformer', 'running', 'running shoes', 'jogging', 'walking', 'hiking', 'hiking gear', 'trekking pole', 'camping', 'camping tent',
+                'sleeping bag', 'fishing', 'fishing rod', 'tackle box', 'hunting', 'hunting rifle', 'binoculars', 'cycling', 'bicycle', 'mountain bike',
+                'biking', 'bike helmet', 'swimming', 'swimming goggles', 'swim cap', 'diving', 'scuba diving', 'snorkel set', 'surfing', 'surfboard',
+                'wetsuit', 'skiing', 'ski goggles', 'ski pole', 'snowboarding', 'snowboard boots', 'skateboarding', 'skateboard deck', 'roller', 'rollerblade',
+                'roller skate', 'team', 'team sports', 'soccer', 'soccer ball', 'goal', 'basketball', 'basketball hoop', 'football', 'football helmet',
+                'baseball', 'baseball bat', 'glove', 'tennis', 'tennis racket', 'balls', 'golf', 'golf club', 'golf bag', 'badminton', 'badminton racket',
+                'shuttlecock', 'music', 'musical instrument', 'guitar', 'acoustic guitar', 'electric guitar', 'piano', 'digital piano', 'keyboard',
+                'synthesizer', 'drum', 'drum set', 'electronic drum', 'violin', 'cello', 'brass instrument', 'trumpet', 'microphone', 'condenser microphone',
+                'karaoke', 'karaoke machine', 'microphone set', 'dj', 'dj controller', 'turntable', 'lighting', 'stage lighting', 'effect', 'light effect',
+                'party', 'party supply', 'event', 'entertainment system', 'game', 'board game', 'video game', 'console', 'playstation 5', 'xbox series x',
+                'nintendo', 'virtual reality', 'sports nutrition', 'protein powder', 'sports drink', 'fitness tracker', 'smart scale', 'compression wear'
+            ],
+            'Baby & Maternity': [
+                'baby', 'infant', 'newborn', 'toddler', 'child', 'kids', 'maternity', 'pregnancy', 'expecting', 'mother', 'parenting', 'nursery',
+                'nursery decor', 'crib', 'convertible crib', 'bassinet', 'co sleeper', 'bed', 'toddler bed', 'mattress', 'crib mattress', 'waterproof pad',
+                'changing', 'changing table', 'changing pad', 'dresser', 'changing dresser', 'storage', 'nursery storage', 'organizer', 'diaper organizer',
+                'stroller', 'travel system', 'jogging stroller', 'pram', 'carrier', 'baby carrier', 'wrap carrier', 'sling', 'ring sling', 'car seat',
+                'infant car seat', 'convertible car seat', 'high chair', 'booster seat', 'feeding booster', 'bath', 'baby bath', 'bathtub', 'sponge pad',
+                'toy', 'baby toy', 'developmental toy', 'educational', 'learning toy', 'development', 'sensory play', 'clothing', 'baby clothes', 'bodysuit',
+                'onesie', 'footie pajamas', 'romper', 'sleepwear', 'sleep sack', 'swaddle', 'swaddle blanket', 'muslin blanket', 'blanket', 'receiving blanket',
+                'feeding', 'baby bottle', 'breast pump', 'electric pump', 'pacifier', 'teether', 'soother', 'health', 'baby monitor', 'video monitor',
+                'thermometer', 'nasal aspirator', 'grooming', 'nail clipper', 'baby shampoo', 'diaper', 'diaper bag', 'wipes', 'wipes warmer', 'safety',
+                'baby gate', 'corner guard', 'outlet cover', 'baby proofing', 'maternity wear', 'nursing bra', 'nursing pillow', 'postpartum', 'baby gear travel bag'
+            ],
+            'Plus Sized Clothing': [
+                'plus size', 'plus sized', 'curve', 'curvy', 'full figured', 'big', 'tall', 'women', 'womens plus', 'men', 'mens big', 'clothing', 'apparel',
+                'fashion', 'dress', 'plus size dress', 'bodycon dress', 'wrap dress', 'top', 'blouse', 'tunic top', 'shirt', 'button up shirt', 't-shirt',
+                'graphic tee', 'v neck tee', 'sweater', 'cardigan', 'open front cardigan', 'jacket', 'denim jacket', 'coat', 'wool coat', 'hoodie',
+                'zip up hoodie', 'sweatshirt', 'fleece sweatshirt', 'pants', 'palazzo pants', 'wide leg pants', 'jeans', 'plus size jeans', 'bootcut jeans',
+                'leggings', 'high waisted leggings', 'shorts', 'bermuda shorts', 'skirt', 'pencil skirt', 'maxi skirt', 'jumpsuit', 'romper', 'playsuit',
+                'lingerie', 'bra', 'full coverage bra', 'wirefree bra', 'panties', 'briefs', 'hipster', 'shapewear', 'shaper', 'bodysuit', 'swimwear',
+                'plus size swimsuit', 'tankini', 'one piece swimsuit', 'activewear', 'plus size activewear', 'yoga pants', 'fitness', 'workout', 'gym wear',
+                'fashion', 'trendy', 'stylish', 'chic', 'comfort', 'comfort wear', 'loungewear', 'sleepwear', 'pajama set', 'robe', 'kimono', 'occasion wear',
+                'evening wear', 'workwear', 'office wear', 'casual', 'weekend wear', 'streetwear', 'sustainable fashion', 'organic', 'size inclusive', 'extended sizes'
+            ],
+            'Pet Supplies': [
+                'pet', 'supply', 'pet supply', 'dog', 'cat', 'puppy', 'kitten', 'bird', 'fish', 'small animal', 'rabbit', 'hamster', 'food', 'pet food',
+                'dry food', 'wet food', 'raw food', 'treat', 'dog treat', 'cat treat', 'dental treat', 'snack', 'chew snack', 'bowl', 'food bowl',
+                'water bowl', 'elevated bowl', 'feeder', 'automatic feeder', 'slow feeder', 'waterer', 'water fountain', 'pet fountain', 'bed', 'dog bed',
+                'orthopedic bed', 'cat bed', 'mat', 'placemat', 'cooling mat', 'crate', 'dog crate', 'folding crate', 'cage', 'bird cage', 'small animal cage',
+                'carrier', 'pet carrier', 'soft sided carrier', 'house', 'dog house', 'cat house', 'shelter', 'igloo', 'toy', 'dog toy', 'chew toy',
+                'interactive toy', 'cat toy', 'feather wand', 'chew', 'bone', 'antler', 'rawhide', 'ball', 'tennis ball', 'fetch toy', 'frisbee',
+                'leash', 'dog leash', 'retractable leash', 'collar', 'dog collar', 'cat collar', 'breakaway collar', 'harness', 'no pull harness',
+                'step in harness', 'clothing', 'dog clothing', 'sweater', 'raincoat', 'costume', 'pet costume', 'grooming', 'brush', 'slicker brush',
+                'deshedding tool', 'comb', 'wide tooth comb', 'nail clipper', 'grinder', 'shampoo', 'conditioner', 'pet wipes', 'health', 'flea treatment',
+                'tick remover', 'vitamin', 'supplement', 'joint supplement', 'calming aid', 'medicine', 'first aid', 'first aid kit', 'cleaning', 'stain remover',
+                'odor eliminator', 'litter', 'cat litter', 'clumping litter', 'box', 'litter box', 'self cleaning box', 'training', 'potty training pad',
+                'clicker', 'whistle', 'pet camera', 'feeder camera', 'gps tracker', 'pet gate', 'car seat cover', 'pet stroller'
+            ]
+        };
+
+        // Event Listeners
+        document.getElementById('search-btn').addEventListener('click', performSearch);
+        document.getElementById('search-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        document.getElementById('language-btn').addEventListener('click', toggleLanguageDropdown);
+        document.getElementById('clear-all-favorites').addEventListener('click', showConfirmationModal);
+        
+        // Infinite scroll event listener
+        window.addEventListener('scroll', handleScroll);
+        
+        // Modal Event Listeners
+        allCategoriesBtn.addEventListener('click', openCategoriesModal);
+        modalClose.addEventListener('click', closeCategoriesModal);
+        categoriesModal.addEventListener('click', function(e) {
+            if (e.target === categoriesModal) {
+                closeCategoriesModal();
+            }
+        });
+        
+        // Confirmation Modal Event Listeners
+        confirmationClose.addEventListener('click', closeConfirmationModal);
+        cancelClearBtn.addEventListener('click', closeConfirmationModal);
+        confirmClearBtn.addEventListener('click', clearAllFavorites);
+        confirmationModal.addEventListener('click', function(e) {
+            if (e.target === confirmationModal) {
+                closeConfirmationModal();
+            }
+        });
+        
+        // ESC key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (categoriesModal.classList.contains('show')) {
+                    closeCategoriesModal();
+                }
+                if (confirmationModal.classList.contains('show')) {
+                    closeConfirmationModal();
+                }
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.language-selector')) {
+                document.getElementById('language-dropdown').classList.remove('show');
+            }
+        });
+
+        // ---------- YENİ YARDIMCI FONKSİYON: Dizi Karıştırıcı ----------
+        /**
+         * Fisher-Yates (Knuth) Shuffle algoritması ile bir diziyi karıştırır.
+         * @param {Array} array Karıştırılacak dizi.
+         * @returns {Array} Karıştırılmış yeni dizi.
+         */
+        function shuffleArray(array) {
+            const newArray = [...array]; // Orijinal diziyi değiştirmemek için kopya oluştur
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Change language
+        function changeLanguage(lang) {
+            currentLanguage = lang;
+            localStorage.setItem('language', lang);
+            document.getElementById('current-language').textContent = lang.toUpperCase();
+            updatePageLanguage();
+            toggleLanguageDropdown();
+            
+            // Re-render products
+            if (allProducts.length > 0) {
+                filterAndDisplayProducts();
+            }
+        }
+
+        function toggleLanguageDropdown() {
+            document.getElementById('language-dropdown').classList.toggle('show');
+        }
+
+        function createLanguageOptions() {
+            const languages = [
+                { code: 'en', name: 'English', flag: '🇺🇸' },
+                { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+                { code: 'es', name: 'Español', flag: '🇪🇸' },
+                { code: 'fr', name: 'Français', flag: '🇫🇷' },
+                { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+                { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+                { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+                { code: 'zh', name: '中文', flag: '🇨🇳' },
+                { code: 'ja', name: '日本語', flag: '🇯🇵' }
+            ];
+
+            const dropdown = document.getElementById('language-dropdown');
+            dropdown.innerHTML = languages.map(lang => `
+                <div class="language-option" onclick="changeLanguage('${lang.code}')">
+                    ${lang.flag} ${lang.name}
+                </div>
+            `).join('');
+        }
+
+        // Update page language
+        function updatePageLanguage() {
+            document.querySelectorAll('[data-translate]').forEach(element => {
+                const key = element.getAttribute('data-translate');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    let translatedText = translations[currentLanguage][key];
+                    
+                    // Replace variables for special cases
+                    if (key === 'favoritesCount') {
+                        translatedText = translatedText.replace('{count}', favorites.length);
+                    }
+                    
+                    if (element.tagName === 'INPUT') {
+                        element.placeholder = translatedText;
+                    } else if (element.tagName === 'OPTION') {
+                        element.textContent = translatedText;
+                    } else {
+                        element.textContent = translatedText;
+                    }
+                }
+            });
+            updateFavoritesCount();
+        }
+
+        // Translate product title
+        function translateProductTitle(title, targetLang) {
+            if (targetLang === 'en') return title;
+            
+            let translatedTitle = title;
+            const titleLower = title.toLowerCase();
+            
+            // Simple translation for each language
+            const translationMap = {
+                tr: {},
+                es: {},
+                fr: {},
+                de: {},
+                ru: {},
+                ar: {},
+                zh: {},
+                ja: {}
+            };
+            
+            return translatedTitle;
+        }
+
+        // Toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Coupon copy message
+        function showCopyMsg() {
+            copyMsg.style.display = "block";
+            setTimeout(() => copyMsg.style.display = "none", 1300);
+        }
+
+        // Show confirmation modal
+        function showConfirmationModal() {
+            if (favorites.length === 0) {
+                showToast(currentLanguage === 'tr' ? 'Favori ürün bulunmuyor!' : 'No favorite products found!');
+                return;
+            }
+            confirmationModal.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close confirmation modal
+        function closeConfirmationModal() {
+            confirmationModal.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // Predict category
+        function predictCategory(productTitle) {
+            const title = productTitle.toLowerCase();
+            
+            for (const [category, keywords] of Object.entries(categoryKeywords)) {
+                for (const keyword of keywords) {
+                    if (title.includes(keyword.toLowerCase())) {
+                        return category;
+                    }
+                }
+            }
+            
+            return 'Diğer';
+        }
+
+        // Open modal function
+        function openCategoriesModal() {
+            // Create category list
+            renderCategoriesModal();
+            
+            // Show modal
+            categoriesModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent page scrolling
+        }
+
+        // Close modal function
+        function closeCategoriesModal() {
+            categoriesModal.classList.remove('show');
+            document.body.style.overflow = ''; // Restore page scrolling
+        }
+
+        // Create category list for modal
+        function renderCategoriesModal() {
+            if (!allProducts || allProducts.length === 0) return;
+            
+            // Collect categories and calculate counts
+            const categoryCounts = {};
+            allProducts.forEach(product => {
+                const category = product.category || 'Diğer';
+                categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+            });
+            
+            // Sort all categories (in fixed order)
+            const allCategoryList = [
+                'all',
+                'Automotive & Motorcycle',
+                'Beauty & Health', 
+                'Phones & Telecommunications',
+                'Home Improvement & Lighting',
+                'Jewelry, Watches & Accessories',
+                'Womens Clothing',
+                'Electronics',
+                'Mens Clothing',
+                'Home & Garden',
+                'Toys & Games',
+                'Luggage, Bags & Shoes',
+                'Furniture',
+                'Computer, Office & Education',
+                'Hair Extensions & Wigs',
+                'Sports & Entertainment',
+                'Baby & Maternity',
+                'Plus Sized Clothing',
+                'Pet Supplies',
+                'Diğer'
+            ];
+            
+            // Create modal content
+            categoriesModalList.innerHTML = allCategoryList.map(category => {
+                let count, displayName;
+                
+                if (category === 'all') {
+                    count = allProducts.length;
+                    displayName = translations[currentLanguage].allCategories || 'All Categories';
+                } else {
+                    count = categoryCounts[category] || 0;
+                    displayName = category;
+                }
+                
+                const isActive = currentCategory === category;
+                
+                return `
+                    <li class="category-modal-item ${isActive ? 'active' : ''}" 
+                        data-category="${category}" 
+                        onclick="selectCategoryFromModal('${category}')">
+                        <span class="category-name">
+                            <i class="fas ${category === 'all' ? 'fa-th-large' : 'fa-tag'}"></i>
+                            ${displayName}
+                        </span>
+                        <span class="category-count">${count}</span>
+                    </li>
+                `;
+            }).join('');
+        }
+
+        // Select category from modal - FIXED
+        function selectCategoryFromModal(category) {
+            // Select category
+            currentCategory = category;
+            currentDisplayedCount = 0;
+            
+            // Update All Categories button
+            updateAllCategoriesButton();
+            
+            // Close modal
+            closeCategoriesModal();
+            
+            // Turn off favorites filter
+            currentFilter = 'all';
+            favoritesManagement.classList.remove('show');
+            
+            // Activate All Categories button
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            allCategoriesBtn.classList.add('active');
+            
+            // Filter and display products
+            filterAndDisplayProducts();
+        }
+
+        // Update All Categories button
+        function updateAllCategoriesButton() {
+            const count = currentCategory === 'all' 
+                ? allProducts.length 
+                : allProducts.filter(p => p.category === currentCategory).length;
+            
+            allCategoriesBtn.innerHTML = `
+                <i class="fas fa-th-large"></i> 
+                <span data-translate="allCategories">${currentCategory === 'all' ? translations[currentLanguage].allCategories : currentCategory}</span> 
+                (${count})
+            `;
+            
+            // Reapply translation
+            const span = allCategoriesBtn.querySelector('span[data-translate]');
+            if (span && translations[currentLanguage]) {
+                const key = span.getAttribute('data-translate');
+                if (translations[currentLanguage][key]) {
+                    span.textContent = currentCategory === 'all' 
+                        ? translations[currentLanguage][key] 
+                        : currentCategory;
+                }
+            }
+        }
+
+        // Get category count
+        function getCategoryCount(category) {
+            if (category === 'all') return allProducts.length;
+            return allProducts.filter(p => p.category === category).length;
+        }
+
+        // Load Excel file
+        async function loadExcelFile() {
+            try {
+                console.log("Loading Excel...");
+                
+                // Load real Excel file
+                try {
+                    const response = await fetch(EXCEL_FILE_URL);
+                    if (response.ok) {
+                        const arrayBuffer = await response.arrayBuffer();
+                        const data = new Uint8Array(arrayBuffer);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                        
+                        if (jsonData.length > 0) {
+                            allProducts = jsonData.map(item => {
+                                const originalTitle = item['Product Desc'] || item.title || 'Product';
+                                const product = {
+                                    id: item.ProductId || Math.random().toString(36).substr(2, 9),
+                                    title: originalTitle,
+                                    originalTitle: originalTitle,
+                                    image: item['Image Url'] || item.image || '',
+                                    originalPrice: item['Origin Price'] || item.originalPrice || '₺0',
+                                    discountPrice: item['Discount Price'] || item.discountPrice || '₺0', 
+                                    discount: item.Discount || item.discount || '%0',
+                                    code: item['Code Name'] || item.code || '',
+                                    link: item['Promotion Url'] || item.link || '#',
+                                    category: item.Category || item.category || '',
+                                    rating: item['Positive Feedback'] || item.rating || '0',
+                                    sales: item.Sales180Day || item.sales || '0'
+                                };
+                                
+                                if (!product.category) {
+                                    product.category = predictCategory(product.title);
+                                }
+                                
+                                return product;
+                            });
+                            
+                            // ** YENİ EKLENEN KISIM **
+                            // Excel'den yüklenen ürünleri karıştır (shuffle)
+                            allProducts = shuffleArray(allProducts);
+                            console.log("Loaded and shuffled", allProducts.length, "products from Excel");
+                        } else {
+                            throw new Error('Excel file is empty');
+                        }
+                    } else {
+                        throw new Error('Excel file not found');
+                    }
+                } catch (error) {
+                    console.log("Excel could not be loaded:", error.message);
+                    // Show home page button when no products are loaded
+                    statusInfo.style.display = 'none';
+                    homePageBtnContainer.style.display = 'block';
+                    return;
+                }
+
+                processProducts();
+                
+            } catch (error) {
+                console.error("Error:", error);
+                statusInfo.style.display = 'none';
+                homePageBtnContainer.style.display = 'block';
+            }
+        }
+
+        // Process products
+        function processProducts() {
+            if (allProducts.length === 0) {
+                // Show home page button when no products are loaded
+                statusInfo.style.display = 'none';
+                homePageBtnContainer.style.display = 'block';
+                return;
+            }
+            
+            // Show All Categories, Favorites and Sort buttons
+            categoriesContainer.innerHTML = `
+                <button class="category-btn active" data-category="all" id="all-categories-btn">
+                    <i class="fas fa-th-large"></i> <span data-translate="allCategories">All Categories</span> (<span id="all-categories-count">${allProducts.length}</span>)
+                </button>
+                <button class="category-btn" data-filter="favorites" id="favorites-filter-btn">
+                    <i class="fas fa-heart"></i> <span data-translate="filterFavorites">Favorites</span> (<span id="favorites-count-badge">${favorites.length}</span>)
+                </button>
+                <select class="sort-select" id="sort-select">
+                    <option value="default" data-translate="sortDefault">Sort</option>
+                    <option value="price-low" data-translate="sortPriceLow">Price ↑</option>
+                    <option value="price-high" data-translate="sortPriceHigh">Price ↓</option>
+                    <option value="discount" data-translate="sortDiscount">Discount</option>
+                    <option value="rating" data-translate="sortRating">Rating</option>
+                </select>
+            `;
+
+            // Add event listener to All Categories button
+            document.getElementById('all-categories-btn').addEventListener('click', openCategoriesModal);
+
+            // Add event listener to Favorites button
+            document.getElementById('favorites-filter-btn').addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                currentFilter = 'favorites';
+                currentDisplayedCount = 0;
+                favoritesManagement.classList.add('show');
+                
+                // Eğer favori yoksa, hiçbir ürün gösterme
+                if (favorites.length === 0) {
+                    productsGrid.innerHTML = '';
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                    endOfResults.style.display = 'none';
+                    loadingIndicator.style.display = 'none';
+                    favoritesManagement.classList.add('show');
+                } else {
+                    filterAndDisplayProducts();
+                }
+            });
+
+            // Add sort option event listener
+            const sortSelect = document.getElementById('sort-select');
+            sortSelect.addEventListener('change', handleSortChange);
+            
+            statusInfo.style.display = 'none';
+            homePageBtnContainer.style.display = 'none';
+            mainContent.style.display = 'block';
+            
+            filterAndDisplayProducts();
+        }
+
+        // Filter and display - FIXED: Favorilerde kategori filtresini uygulamama
+        function filterAndDisplayProducts() {
+            filteredProducts = [...allProducts];
+            
+            // Favorites filter - TÜM KATEGORİLERDEN FAVORİLERİ GÖSTER
+            if (currentFilter === 'favorites') {
+                filteredProducts = filteredProducts.filter(p => favorites.includes(p.id));
+                favoritesManagement.classList.add('show');
+                
+                // Eğer favori yoksa, hiçbir ürün gösterme
+                if (favorites.length === 0) {
+                    productsGrid.innerHTML = '';
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                    endOfResults.style.display = 'none';
+                    loadingIndicator.style.display = 'none';
+                    return; // Burada return yaparak aşağıdaki kodu çalıştırmayı durduruyoruz
+                }
+            } else {
+                // Category filter (only apply when not in favorites mode)
+                if (currentCategory !== 'all') {
+                    filteredProducts = filteredProducts.filter(p => p.category === currentCategory);
+                }
+                favoritesManagement.classList.remove('show');
+            }
+            
+            // Sorting
+            filteredProducts = applySorting(filteredProducts);
+            
+            // Show first 50 products
+            currentDisplayedCount = 0;
+            loadMoreProducts();
+        }
+
+        // Sorting
+        function handleSortChange() {
+            currentSort = document.getElementById('sort-select').value;
+            currentDisplayedCount = 0;
+            filterAndDisplayProducts();
+        }
+
+        function applySorting(products) {
+            let sortedProducts = [...products];
+            
+            switch(currentSort) {
+                case 'price-low':
+                    sortedProducts.sort((a, b) => {
+                        const priceA = extractPrice(a.discountPrice);
+                        const priceB = extractPrice(b.discountPrice);
+                        return priceA - priceB;
+                    });
+                    break;
+                case 'price-high':
+                    sortedProducts.sort((a, b) => {
+                        const priceA = extractPrice(a.discountPrice);
+                        const priceB = extractPrice(b.discountPrice);
+                        return priceB - priceA;
+                    });
+                    break;
+                case 'discount':
+                    sortedProducts.sort((a, b) => {
+                        const discountA = extractDiscount(a.discount);
+                        const discountB = extractDiscount(b.discount);
+                        return discountB - discountA;
+                    });
+                    break;
+                case 'rating':
+                    sortedProducts.sort((a, b) => {
+                        const ratingA = parseFloat(a.rating) || 0;
+                        const ratingB = parseFloat(b.rating) || 0;
+                        return ratingB - ratingA;
+                    });
+                    break;
+                default:
+                    // ** YENİ DEĞİŞİKLİK **
+                    // Varsayılan sıralamada diziyi karıştır.
+                    sortedProducts = shuffleArray(sortedProducts);
+                    break;
+            }
+            return sortedProducts;
+        }
+
+        function extractPrice(priceStr) {
+            if (!priceStr) return 0;
+            const match = priceStr.match(/[\d,]+/);
+            return match ? parseFloat(match[0].replace(',', '')) : 0;
+        }
+
+        function extractDiscount(discountStr) {
+            if (!discountStr) return 0;
+            const match = discountStr.match(/\d+/);
+            return match ? parseInt(match[0]) : 0;
+        }
+
+        // Load more products
+        function loadMoreProducts() {
+            if (isLoading) return;
+            
+            const startIndex = currentDisplayedCount;
+            const endIndex = Math.min(currentDisplayedCount + productsPerPage, filteredProducts.length);
+            
+            if (startIndex >= filteredProducts.length) {
+                // All products loaded
+                endOfResults.style.display = 'block';
+                loadingIndicator.style.display = 'none';
+                return;
+            }
+            
+            isLoading = true;
+            loadingIndicator.style.display = 'block';
+            endOfResults.style.display = 'none';
+            
+            // Simulated loading delay
+            setTimeout(() => {
+                const productsToShow = filteredProducts.slice(startIndex, endIndex);
+                
+                if (currentDisplayedCount === 0) {
+                    // First load, clear all products
+                    productsGrid.innerHTML = '';
+                }
+                
+                renderProducts(productsToShow);
+                
+                currentDisplayedCount = endIndex;
+                isLoading = false;
+                loadingIndicator.style.display = 'none';
+                
+                // Check if all products are loaded
+                if (currentDisplayedCount >= filteredProducts.length) {
+                    endOfResults.style.display = 'block';
+                }
+                
+                // Show no favorites message if in favorites mode and no favorites
+                if (currentFilter === 'favorites' && filteredProducts.length === 0) {
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                } else {
+                    noFavorites.style.display = 'none';
+                    productsGrid.style.display = 'grid';
+                }
+            }, 500);
+        }
+
+        // Scroll handler
+        function handleScroll() {
+            if (isLoading) return;
+            
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // Load more products when approaching the end of the page
+            if (scrollTop + windowHeight >= documentHeight - 500) {
+                loadMoreProducts();
+            }
+        }
+
+        // Render products
+        function renderProducts(products) {
+            if (products.length === 0 && currentDisplayedCount === 0) {
+                if (currentFilter === 'favorites') {
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                } else {
+                    productsGrid.innerHTML = `<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-color);">${translations[currentLanguage].noProductsFound}</p>`;
+                }
+                loadingIndicator.style.display = 'none';
+                endOfResults.style.display = 'none';
+                return;
+            }
+
+            noFavorites.style.display = 'none';
+            productsGrid.style.display = 'grid';
+
+            products.forEach(product => {
+                const isFavorite = favorites.includes(product.id);
+                
+                // Translate product title
+                const displayTitle = currentLanguage === 'en' 
+                    ? product.title 
+                    : translateProductTitle(product.originalTitle || product.title, currentLanguage);
+                
+                // Use product image or placeholder
+                const PLACEHOLDER_IMAGE = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23e9ecef'/%3E%3Ctext x='50%25' y='50%25' font-size='18' fill='%236c757d' font-family='Arial, sans-serif' text-anchor='middle' dy='.3em'%3ENo Image%3C/text%3E%3C/svg%3E";                
+               
+                // Ürün resmi varsa onu, yoksa yeni placeholder'ı kullan.
+                const productImage = product.image || PLACEHOLDER_IMAGE;
+                
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <div class="product-image-container" onclick="window.open('${product.link}', '_blank')">
+                        <div class="product-badge">${product.discount}</div>
+                        <div class="category-badge">${product.category}</div>
+                        ${currentFilter === 'favorites' ? `
+                        <button class="remove-favorite-btn" onclick="removeFavorite('${product.id}', event)">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        ` : ''}
+                        <img src="${productImage}" alt="${displayTitle}" class="product-image" onerror="this.src='${PLACEHOLDER_IMAGE}'; console.log('Image load failed, using static placeholder for:', '${product.id}');">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-title" onclick="toggleTitle(this)">${displayTitle}</h3>
+                        <div class="product-price">
+                            <span class="current-price">${product.discountPrice}</span>
+                            <span class="original-price">${product.originalPrice}</span>
+                            <span class="discount">${product.discount}</span>
+                        </div>
+                        ${product.code ? `
+                        <div class="product-code">
+                            <span class="code-label">${translations[currentLanguage].discountCode}</span>
+                            <span class="code-value" onclick="copyCode('${product.code}', event)">${product.code}</span>
+                        </div>
+                        ` : ''}
+                        <div class="product-actions">
+                            <a href="${product.link}" target="_blank" class="buy-btn">
+                                <i class="fas fa-shopping-cart"></i> ${translations[currentLanguage].buyNow}
+                            </a>
+                            <button class="wishlist-btn ${isFavorite ? 'active' : ''}" onclick="toggleFavorite('${product.id}', this)">
+                                <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                            </button>
+                            <button class="share-btn" onclick="shareProduct(${JSON.stringify(product).replace(/"/g, '&quot;')}, event)">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                productsGrid.appendChild(productCard);
+            });
+        }
+
+        // Expand/collapse product title
+        function toggleTitle(element) {
+            element.classList.toggle('expanded');
+        }
+
+        // Favorite operations - FIXED: Son ürün silindiğinde ekranı güncelle
+        function toggleFavorite(productId, buttonElement) {
+            const index = favorites.indexOf(productId);
+            if (index === -1) {
+                favorites.push(productId);
+                showToast(translations[currentLanguage].addedToFavorites);
+                if (buttonElement) {
+                    buttonElement.classList.add('active');
+                    buttonElement.innerHTML = '<i class="fas fa-heart"></i>';
+                }
+            } else {
+                favorites.splice(index, 1);
+                showToast(translations[currentLanguage].removedFromFavorites);
+                if (buttonElement) {
+                    buttonElement.classList.remove('active');
+                    buttonElement.innerHTML = '<i class="far fa-heart"></i>';
+                }
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            updateFavoritesUI();
+            
+            // If we're in favorites view, refresh the view
+            if (currentFilter === 'favorites') {
+                currentDisplayedCount = 0;
+                filterAndDisplayProducts();
+                
+                // Eğer favori kalmadıysa "no favorites" mesajını göster
+                if (favorites.length === 0) {
+                    // Hemen ekranı temizle
+                    productsGrid.innerHTML = '';
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                    endOfResults.style.display = 'none';
+                    loadingIndicator.style.display = 'none';
+                }
+            }
+        }
+
+        function removeFavorite(productId, event) {
+            if (event) event.stopPropagation();
+            const index = favorites.indexOf(productId);
+            if (index !== -1) {
+                favorites.splice(index, 1);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                showToast(translations[currentLanguage].removedFromFavorites);
+                updateFavoritesUI();
+                
+                // If we're in favorites view, refresh the view
+                if (currentFilter === 'favorites') {
+                    currentDisplayedCount = 0;
+                    filterAndDisplayProducts();
+                    
+                    // Eğer favori kalmadıysa "no favorites" mesajını göster
+                    if (favorites.length === 0) {
+                        // Hemen ekranı temizle
+                        productsGrid.innerHTML = '';
+                        noFavorites.style.display = 'block';
+                        productsGrid.style.display = 'none';
+                        endOfResults.style.display = 'none';
+                        loadingIndicator.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        // FIXED: Favorileri temizle fonksiyonu - ekrandaki ürünleri de kaldır
+        function clearAllFavorites() {
+            if (favorites.length > 0) {
+                favorites = [];
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                showToast(translations[currentLanguage].allFavoritesCleared);
+                updateFavoritesUI();
+                closeConfirmationModal();
+                
+                // Favori modundaysak ekranı güncelle
+                if (currentFilter === 'favorites') {
+                    // Tüm favori ürünleri ekrandan kaldır
+                    productsGrid.innerHTML = '';
+                    currentDisplayedCount = 0;
+                    
+                    // "Favori yok" mesajını göster
+                    noFavorites.style.display = 'block';
+                    productsGrid.style.display = 'none';
+                    endOfResults.style.display = 'none';
+                    loadingIndicator.style.display = 'none';
+                    
+                    // Favori sayısını güncelle
+                    document.getElementById('favorites-count-badge').textContent = '0';
+                    
+                    // Favorites count mesajını güncelle
+                    const favoritesCountElement = document.getElementById('favorites-count');
+                    if (translations[currentLanguage]) {
+                        favoritesCountElement.textContent = 
+                            translations[currentLanguage].favoritesCount.replace('{count}', 0);
+                    }
+                } else {
+                    // Favori modunda değilsek, sadece favori butonlarını güncelle
+                    updateAllFavoriteButtons();
+                }
+            } else {
+                closeConfirmationModal();
+                showToast(currentLanguage === 'tr' ? 'Favori ürün bulunmuyor!' : 'No favorite products found!');
+            }
+        }
+
+        // Tüm favori butonlarını güncelle
+        function updateAllFavoriteButtons() {
+            const favoriteButtons = document.querySelectorAll('.wishlist-btn');
+            favoriteButtons.forEach(btn => {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="far fa-heart"></i>';
+            });
+        }
+
+        function updateFavoritesUI() {
+            updateFavoritesCount();
+            
+            // Update favorites count in badge
+            const favoritesBadge = document.getElementById('favorites-count-badge');
+            if (favoritesBadge) {
+                favoritesBadge.textContent = favorites.length;
+            }
+            
+            // Update all favorite buttons on the page
+            const favoriteButtons = document.querySelectorAll('.wishlist-btn');
+            favoriteButtons.forEach(btn => {
+                const productCard = btn.closest('.product-card');
+                if (productCard) {
+                    // Get product ID from the button's onclick attribute
+                    const onclickAttr = btn.getAttribute('onclick');
+                    const match = onclickAttr.match(/toggleFavorite\('([^']+)'/);
+                    if (match) {
+                        const productId = match[1];
+                        if (favorites.includes(productId)) {
+                            btn.classList.add('active');
+                            btn.innerHTML = '<i class="fas fa-heart"></i>';
+                        } else {
+                            btn.classList.remove('active');
+                            btn.innerHTML = '<i class="far fa-heart"></i>';
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateFavoritesCount() {
+            const count = favorites.length;
+            const favoritesCountElement = document.getElementById('favorites-count');
+            if (translations[currentLanguage]) {
+                favoritesCountElement.textContent = 
+                    translations[currentLanguage].favoritesCount.replace('{count}', count);
+            }
+        }
+
+        // Other functions
+        function performSearch() {
+            const term = document.getElementById('search-input').value.toLowerCase().trim();
+            if (!term) {
+                currentDisplayedCount = 0;
+                filterAndDisplayProducts();
+                return;
+            }
+            
+            const filtered = allProducts.filter(p => {
+                const displayTitle = currentLanguage === 'en' 
+                    ? p.title 
+                    : translateProductTitle(p.originalTitle || p.title, currentLanguage);
+                
+                return displayTitle.toLowerCase().includes(term) || 
+                       (p.category && p.category.toLowerCase().includes(term));
+            });
+            
+            filteredProducts = filtered;
+            currentDisplayedCount = 0;
+            loadMoreProducts();
+        }
+
+        function copyCode(code, event) {
+            if (event) event.stopPropagation();
+            navigator.clipboard.writeText(code).then(() => {
+                showCopyMsg();
+            }).catch(err => {
+                showToast(currentLanguage === 'tr' ? 'Kopyalama başarısız!' : 'Copy failed!');
+            });
+        }
+
+        function shareProduct(product, event) {
+            if (event) event.stopPropagation();
+            const shareText = translations[currentLanguage].shareText;
+            const shareUrl = product.link;
+            const discountCode = product.code ? `\n${translations[currentLanguage].discountCode} ${product.code}` : '';
+            
+            // Translated title
+            const displayTitle = currentLanguage === 'en' 
+                ? product.title 
+                : translateProductTitle(product.originalTitle || product.title, currentLanguage);
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: displayTitle,
+                    text: `${shareText}${discountCode}`,
+                    url: shareUrl
+                });
+            } else {
+                navigator.clipboard.writeText(`${displayTitle} - ${shareUrl}${discountCode}`);
+                showToast(currentLanguage === 'tr' ? 'Ürün bilgileri kopyalandı!' : 'Product information copied!');
+            }
+        }
+
+        // When page loads
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log("Page loaded");
+            
+            // Apply light theme
+            document.documentElement.setAttribute('data-theme', 'light');
+            
+            // Load language - English as default
+            const savedLanguage = localStorage.getItem('language') || 'en';
+            currentLanguage = savedLanguage;
+            document.getElementById('current-language').textContent = savedLanguage.toUpperCase();
+            
+            createLanguageOptions();
+            updatePageLanguage();
+            loadExcelFile();
+        });
+
+        // Global functions
+        window.changeLanguage = changeLanguage;
+        window.toggleFavorite = toggleFavorite;
+        window.removeFavorite = removeFavorite;
+        window.copyCode = copyCode;
+        window.shareProduct = shareProduct;
+        window.toggleTitle = toggleTitle;
+        window.openCategoriesModal = openCategoriesModal;
+        window.closeCategoriesModal = closeCategoriesModal;
+        window.selectCategoryFromModal = selectCategoryFromModal;
+        window.showConfirmationModal = showConfirmationModal;
+        window.closeConfirmationModal = closeConfirmationModal;
+    </script>
+</body>
+</html>
